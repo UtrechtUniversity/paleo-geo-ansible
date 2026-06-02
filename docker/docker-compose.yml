@@ -1,0 +1,58 @@
+---
+# copyright Utrecht University
+
+volumes:
+  paleo_db_data:
+  paleo_wp_content:
+  paleo_apache_certs:
+
+services:
+
+  database:
+    container_name: paleo-database
+    image: mariadb:11
+    restart: always
+    volumes:
+      - paleo_db_data:/var/lib/mysql:Z
+    environment:
+      - MARIADB_AUTO_UPGRADE=1
+      - MARIADB_DATABASE=wordpress
+      - MARIADB_DISABLE_UPGRADE_BACKUP=1
+      - MARIADB_INITDB_SKIP_TZINFO=1
+      - MARIADB_USER=wordpress
+      - MARIADB_PASSWORD=${MARIADB_PASSWORD}
+      - MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}
+
+  wordpress:
+    container_name: paleo-wordpress
+    # Image tag — in production this will become ghcr.io/utrechtuniversity/paleo-wordpress:<version>.
+    # For dev the image is built locally on the VM 
+    image: paleo-wordpress:latest
+    build:
+      context: ./images/wordpress
+      dockerfile: Dockerfile
+    restart: always
+    depends_on:
+      - database
+    ports:
+      - "${PALEO_HOST_IP}:80:80"
+      - "${PALEO_HOST_IP}:${PALEO_HOST_PORT}:443"
+    sysctls:
+      net.ipv4.ip_unprivileged_port_start: 0
+    volumes:
+      # WordPress content (themes, plugins, uploads) persists across rebuilds.
+      - paleo_wp_content:/var/www/html/wp-content:Z
+      # Apache cert store persists self-signed certs across container restarts.
+      - paleo_apache_certs:/etc/apache2/certs:Z
+      # Operator-supplied static certs land here via Ansible (cert_mode=static).
+      - ./import-certificates:/etc/import-certificates
+    environment:
+      - PALEO_HOST=${PALEO_HOST}
+      - PALEO_FIRST_SITE_TITLE=${PALEO_FIRST_SITE_TITLE}
+      - PALEO_FIRST_USER_NAME=${PALEO_FIRST_USER_NAME}
+      - PALEO_FIRST_USER_EMAIL=${PALEO_FIRST_USER_EMAIL}
+      - PALEO_FIRST_USER_PASSWORD=${PALEO_FIRST_USER_PASSWORD}
+      - WORDPRESS_DB_HOST=database
+      - WORDPRESS_DB_NAME=wordpress
+      - WORDPRESS_DB_USER=wordpress
+      - WORDPRESS_DB_PASSWORD=${MARIADB_PASSWORD}

@@ -1,0 +1,10 @@
+exclude_paths:
+  - .github/
+  - docker/
+
+skip_list:
+  - no-changed-when
+  - no-handler
+  - experimental
+  - var-naming[no-role-prefix]
+  - schema[meta]

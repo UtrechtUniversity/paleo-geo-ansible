@@ -1,0 +1,20 @@
+---
+# copyright Utrecht University
+# This playbook deploys a complete Paleo instance.
+
+- name: Local checks
+  hosts: localhost
+  gather_facts: false
+  pre_tasks:
+    - name: Verify Ansible version meets requirements
+      ansible.builtin.assert:
+        that: "ansible_version.full is version('2.11', '>=')"
+        msg: "You must update Ansible to at least 2.11 to deploy Paleo."
+
+- name: Provision Paleo WordPress server using Docker setup
+  hosts: all
+  become: true
+  roles:
+    - common
+    - docker_compose
+    - paleo_wordpress

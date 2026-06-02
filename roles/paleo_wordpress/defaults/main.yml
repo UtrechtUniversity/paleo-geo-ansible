@@ -1,0 +1,32 @@
+---
+# copyright Utrecht University
+
+# Defaults for the paleo_wordpress role.
+# Override any of these in environments/<env>/host_vars/<host>.
+
+# Unix user on the VM that owns the docker compose stack.
+paleo_user: paleo
+
+# Site identity
+paleo_host_name: dev.paleo.test
+paleo_host_ip: 192.168.70.10
+paleo_host_port: 443
+
+# First-run WordPress install values (used by paleo-init.sh in the container)
+paleo_first_site_title: "Paleo Earth Demo"
+paleo_first_user_name: admin
+paleo_first_user_email: paleo-example@uu.nl
+# DEV-ONLY DEFAULT — override in host_vars for any real deployment.
+paleo_first_user_password: paleopassword
+
+# Database passwords — DEV-ONLY defaults.
+paleo_mariadb_password: devpassword
+paleo_mariadb_root_password: devrootpassword
+
+# TLS mode:
+#   selfsigned — container generates a 4096-bit cert at first boot.
+#   static     — operator provides paleo_static_cert + paleo_static_cert_key
+#                (PEM strings); Ansible writes them into the import dir.
+paleo_cert_mode: selfsigned
+paleo_static_cert: notset
+paleo_static_cert_key: notset

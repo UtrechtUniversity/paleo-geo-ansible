@@ -1,0 +1,11 @@
+---
+# copyright Utrecht University
+
+- name: Ensure base packages are installed
+  ansible.builtin.package:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - acl           # POSIX ACLs — Ansible's become_user uses them
+    - git
+    - python3-pip
