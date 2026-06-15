@@ -2,18 +2,20 @@
 # copyright Utrecht University
 
 volumes:
-  paleo_db_data:
-  paleo_wp_content:
-  paleo_apache_certs:
+  paleo_wp_db_data:
+  # paleo_wp_html holds the full WordPress install, including wp-config.php
+  # (DB creds + salts) and the .paleo-initialized flag. 
+  paleo_wp_html:
+  paleo_wp_apache_certs:
 
 services:
 
   database:
-    container_name: paleo-database
+    container_name: paleo-wp-database
     image: mariadb:11
     restart: always
     volumes:
-      - paleo_db_data:/var/lib/mysql:Z
+      - paleo_wp_db_data:/var/lib/mysql:Z
     environment:
       - MARIADB_AUTO_UPGRADE=1
       - MARIADB_DATABASE=wordpress
@@ -24,9 +26,8 @@ services:
       - MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}
 
   wordpress:
-    container_name: paleo-wordpress
-    # Image tag — in production this will become ghcr.io/utrechtuniversity/paleo-wordpress:<version>.
-    # For dev the image is built locally on the VM 
+    container_name: paleo-wp
+    # For dev the image is built locally on the VM, inp roduction expect a registered image
     image: paleo-wordpress:latest
     build:
       context: ./images/wordpress
@@ -40,11 +41,10 @@ services:
     sysctls:
       net.ipv4.ip_unprivileged_port_start: 0
     volumes:
-      # WordPress content (themes, plugins, uploads) persists across rebuilds.
-      - paleo_wp_content:/var/www/html/wp-content:Z
-      # Apache cert store persists self-signed certs across container restarts.
-      - paleo_apache_certs:/etc/apache2/certs:Z
-      # Operator-supplied static certs land here via Ansible (cert_mode=static).
+      # Full /var/www/html — keeps wp-config.php + .paleo-initialized + uploads.
+      - paleo_wp_html:/var/www/html:Z
+      # Self-signed certs across container restarts.
+      - paleo_wp_apache_certs:/etc/apache2/certs:Z
       - ./import-certificates:/etc/import-certificates
     environment:
       - PALEO_HOST=${PALEO_HOST}

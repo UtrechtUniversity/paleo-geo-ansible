@@ -1,0 +1,12 @@
+.vagrant
+*.swp
+*.retry
+venv*/
+
+# Generated TLS material — never commit
+docker/import-certificates/*
+!docker/import-certificates/.gitkeep
+
+# Production host_vars must be vaulted before being committed.
+# Uncomment the next line if your workflow keeps them outside git entirely.
+# environments/production/host_vars/*

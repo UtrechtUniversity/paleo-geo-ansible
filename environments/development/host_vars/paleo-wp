@@ -2,20 +2,13 @@
 # copyright Utrecht University
 
 ########################
-# Ansible connection
-########################
-ansible_host: 192.168.70.10
-ansible_user: vagrant
-ansible_ssh_private_key_file: vagrant/ssh/vagrant
-
-########################
-# Paleo site
+# Paleo WordPress site
 ########################
 paleo_host_name: www.paleo.test
 paleo_host_ip: 192.168.70.10
 paleo_host_port: 443
 
-paleo_first_site_title: "Paleo Earth Demo"
+paleo_first_site_title: "Paleo Earth Demo - WordPress site"
 paleo_first_user_name: admin
 paleo_first_user_email: paleo-example@uu.nl
 paleo_first_user_password: paleopassword

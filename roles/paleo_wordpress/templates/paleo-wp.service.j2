@@ -1,0 +1,18 @@
+# copyright Utrecht University
+# {{ ansible_managed }}
+[Unit]
+Description=Paleo Earth WordPress site
+After=network.target docker.service
+Requires=docker.service
+
+[Service]
+User={{ paleo_user }}
+Group={{ paleo_user }}
+WorkingDirectory=/home/{{ paleo_user }}/paleo-ansible/docker/wordpress
+ExecStart=/usr/bin/docker compose up --no-color --no-recreate
+ExecStop=/usr/bin/docker compose down
+TimeoutStartSec=0
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

@@ -1,8 +1,7 @@
 ---
 # copyright Utrecht University
 
-# paleo_wordpress role — deploys the LAMP/WordPress stack to a single host.
-# Pattern adapted from matomo-ansible/roles/matomo_docker.
+# paleo_static role — deploys a static-site Apache stack to a single host.
 
 - name: Ensure paleo group exists
   ansible.builtin.group:
@@ -15,22 +14,19 @@
     groups: docker
     create_home: true
 
-- name: Ensure paleo-ansible/docker/wordpress directory exists on the target
+- name: Ensure paleo-ansible/docker/static directory exists on the target
   ansible.builtin.file:
-    path: "/home/{{ paleo_user }}/paleo-ansible/docker/wordpress"
+    path: "/home/{{ paleo_user }}/paleo-ansible/docker/static"
     state: directory
     owner: "{{ paleo_user }}"
     group: "{{ paleo_user }}"
     mode: '0755'
 
-# MVP shortcut: copy the docker/wordpress/ tree from the Ansible controller.
-# Matomo clones from a published GitHub repo. We do plain copy until
-# paleo-ansible is itself published. Replace this with `ansible.builtin.git:`
-# once the repo is upstream.
-- name: Copy docker/wordpress assets to the target
+# MVP shortcut: copy the docker/static/ tree from the Ansible controller.
+- name: Copy docker/static assets to the target
   ansible.builtin.copy:
-    src: "{{ playbook_dir }}/docker/wordpress/"
-    dest: "/home/{{ paleo_user }}/paleo-ansible/docker/wordpress/"
+    src: "{{ playbook_dir }}/docker/static/"
+    dest: "/home/{{ paleo_user }}/paleo-ansible/docker/static/"
     owner: "{{ paleo_user }}"
     group: "{{ paleo_user }}"
     mode: preserve
@@ -42,7 +38,7 @@
 
 - name: Upload static TLS certificate
   ansible.builtin.copy:
-    dest: "/home/{{ paleo_user }}/paleo-ansible/docker/wordpress/import-certificates/paleo.pem"
+    dest: "/home/{{ paleo_user }}/paleo-ansible/docker/static/import-certificates/paleo.pem"
     content: "{{ paleo_static_cert }}"
     owner: "{{ paleo_user }}"
     group: "{{ paleo_user }}"
@@ -51,17 +47,17 @@
 
 - name: Upload static TLS certificate key
   ansible.builtin.copy:
-    dest: "/home/{{ paleo_user }}/paleo-ansible/docker/wordpress/import-certificates/paleo.key"
+    dest: "/home/{{ paleo_user }}/paleo-ansible/docker/static/import-certificates/paleo.key"
     content: "{{ paleo_static_cert_key }}"
     owner: "{{ paleo_user }}"
     group: "{{ paleo_user }}"
     mode: '0600'
   when: paleo_cert_mode == "static"
 
-- name: Template Docker Compose .env for WordPress
+- name: Template Docker Compose .env for static site
   ansible.builtin.template:
     src: env.j2
-    dest: "/home/{{ paleo_user }}/paleo-ansible/docker/wordpress/.env"
+    dest: "/home/{{ paleo_user }}/paleo-ansible/docker/static/.env"
     owner: "{{ paleo_user }}"
     group: "{{ paleo_user }}"
     mode: '0640'
@@ -76,25 +72,24 @@
     - "80"
     - "{{ paleo_host_port }}"
 
-# MVP shortcut: VM builds its own image. Production should pull a versioned
-# image from a registry built by CI (mirror matomo-ansible workflows).
-- name: Build WordPress image on the target
+# MVP shortcut: VM builds its own image.
+- name: Build static image on the target
   ansible.builtin.command:
     cmd: docker compose build
-    chdir: "/home/{{ paleo_user }}/paleo-ansible/docker/wordpress"
+    chdir: "/home/{{ paleo_user }}/paleo-ansible/docker/static"
   changed_when: true
 
-- name: Install paleo-wp.service systemd unit
+- name: Install paleo-static.service systemd unit
   ansible.builtin.template:
-    src: paleo-wp.service.j2
-    dest: /etc/systemd/system/paleo-wp.service
+    src: paleo-static.service.j2
+    dest: /etc/systemd/system/paleo-static.service
     owner: root
     group: root
     mode: '0644'
 
-- name: Enable and start paleo-wp.service
+- name: Enable and start paleo-static.service
   ansible.builtin.service:
-    name: paleo-wp
+    name: paleo-static
     enabled: true
     state: started
     daemon_reload: true

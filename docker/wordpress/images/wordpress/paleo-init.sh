@@ -1,7 +1,6 @@
 #!/bin/bash
 # copyright Utrecht University
-# Paleo WordPress container bootstrap.
-#
+# Paleo WordPress container initialization.
 # Pattern borrowed from matomo-ansible/docker/images/matomo/matomo-init.sh:
 
 set -uo pipefail

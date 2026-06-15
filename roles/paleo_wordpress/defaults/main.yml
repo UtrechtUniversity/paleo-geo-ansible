@@ -13,7 +13,7 @@ paleo_host_ip: 192.168.70.10
 paleo_host_port: 443
 
 # First-run WordPress install values (used by paleo-init.sh in the container)
-paleo_first_site_title: "Paleo Earth Demo"
+paleo_first_site_title: "Paleo Earth Demo - WordPress site"
 paleo_first_user_name: admin
 paleo_first_user_email: paleo-example@uu.nl
 # DEV-ONLY DEFAULT — override in host_vars for any real deployment.

@@ -14,15 +14,17 @@ DOMAIN  = ".paleo.test"
 NETWORK = "192.168.70."
 NETMASK = "255.255.255.0"
 
+# One VM, two IPs. WordPress binds to the first, static binds to the second.
+# Each site gets its own IP:443 — no reverse proxy needed.
 HOSTS = {
-  "www" => [NETWORK + "10", CPU, RAM, BOX],
+  "www" => [[NETWORK + "10", NETWORK + "11"], CPU, RAM, BOX],
 }
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.ssh.insert_key = false
 
   HOSTS.each do |name, cfg|
-    ipaddr, cpu, ram, box = cfg
+    ipaddrs, cpu, ram, box = cfg
 
     config.vm.define name do |machine|
       machine.vm.box = box
@@ -33,8 +35,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         libvirt.memory = ram
       end
 
-      machine.vm.hostname        = name + DOMAIN
-      machine.vm.network "private_network", ip: ipaddr, netmask: NETMASK
+      machine.vm.hostname = name + DOMAIN
+      ipaddrs.each do |ip|
+        machine.vm.network "private_network", ip: ip, netmask: NETMASK
+      end
       machine.vm.synced_folder ".", "/vagrant", disabled: true
       machine.vm.provision "shell",
         inline: "sudo timedatectl set-timezone Europe/Amsterdam"

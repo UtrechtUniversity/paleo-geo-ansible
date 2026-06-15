@@ -1,7 +1,6 @@
 # copyright Utrecht University
 # Custom WordPress image — Apache + PHP 8.3 + WordPress + WP-CLI.
 # To retain the control on OS layer.
-#
 # NOTE ON BASE IMAGE TAG: `php:8.3-apache-bookworm` pins to Debian 12 (Bookworm).
 # The `php:8.3-apache` recently moved to Debian 13 (Trixie), which has issue in running xz cmd.
 

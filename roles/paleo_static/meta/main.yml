@@ -1,0 +1,11 @@
+---
+# copyright Utrecht University
+
+galaxy_info:
+  author: Paleo Earth
+  description: Deploy a static website using a Dockerised Apache stack
+  license: MIT
+  min_ansible_version: '2.11'
+  platforms:
+    - name: EL
+      version: 9

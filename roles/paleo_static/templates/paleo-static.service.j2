@@ -1,14 +1,14 @@
 # copyright Utrecht University
 # {{ ansible_managed }}
 [Unit]
-Description=Paleo Earth WordPress service
+Description=Paleo Earth static site
 After=network.target docker.service
 Requires=docker.service
 
 [Service]
 User={{ paleo_user }}
 Group={{ paleo_user }}
-WorkingDirectory=/home/{{ paleo_user }}/paleo-ansible/docker
+WorkingDirectory=/home/{{ paleo_user }}/paleo-ansible/docker/static
 ExecStart=/usr/bin/docker compose up --no-color --no-recreate
 ExecStop=/usr/bin/docker compose down
 TimeoutStartSec=0

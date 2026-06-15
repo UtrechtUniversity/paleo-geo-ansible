@@ -1,0 +1,26 @@
+---
+# copyright Utrecht University
+
+volumes:
+  paleo_static_apache_certs:
+
+services:
+
+  static:
+    container_name: paleo-static
+    image: paleo-static:latest
+    build:
+      context: ./images/static
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "${PALEO_HOST_IP}:80:80"
+      - "${PALEO_HOST_IP}:${PALEO_HOST_PORT}:443"
+    sysctls:
+      net.ipv4.ip_unprivileged_port_start: 0
+    volumes:
+      # Apache cert store persists self-signed certs across container restarts.
+      - paleo_static_apache_certs:/etc/apache2/certs:Z
+      - ./import-certificates:/etc/import-certificates
+    environment:
+      - PALEO_HOST=${PALEO_HOST}

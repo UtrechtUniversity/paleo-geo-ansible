@@ -1,4 +1,4 @@
-# paleo-ansible
+# paleo-geo-ansible
 
 Ansible playbook + Docker Compose setup that deploys a Dockerised LAMP stack
 hosting WordPress sites for the Paleo Earth research group at Utrecht University.
