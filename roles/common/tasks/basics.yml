@@ -9,3 +9,4 @@
     - acl           # POSIX ACLs — Ansible's become_user uses them
     - git
     - python3-pip
+    - vim

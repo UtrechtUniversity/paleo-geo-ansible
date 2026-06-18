@@ -9,6 +9,8 @@ Requires=docker.service
 User={{ paleo_user }}
 Group={{ paleo_user }}
 WorkingDirectory=/home/{{ paleo_user }}/paleo-ansible/docker/wordpress
+# --no-recreate: don't bounce running containers on restart. MVP-only; drop it
+# in prod (pinned images make `up` recreate only on real changes).
 ExecStart=/usr/bin/docker compose up --no-color --no-recreate
 ExecStop=/usr/bin/docker compose down
 TimeoutStartSec=0

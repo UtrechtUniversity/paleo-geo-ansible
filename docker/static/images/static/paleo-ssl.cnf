@@ -15,6 +15,7 @@ O  = Paleo Earth
 OU = Utrecht University
 L  = Utrecht
 
+# Modern browsers require a SAN to accept a certificate 
 [ req_ext ]
 subjectAltName = @alt_names
 

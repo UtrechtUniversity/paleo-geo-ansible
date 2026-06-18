@@ -2,7 +2,6 @@
 # copyright Utrecht University
 
 # paleo_wordpress role — deploys the LAMP/WordPress stack to a single host.
-# Pattern adapted from matomo-ansible/roles/matomo_docker.
 
 - name: Ensure paleo group exists
   ansible.builtin.group:
@@ -24,9 +23,6 @@
     mode: '0755'
 
 # MVP shortcut: copy the docker/wordpress/ tree from the Ansible controller.
-# Matomo clones from a published GitHub repo. We do plain copy until
-# paleo-ansible is itself published. Replace this with `ansible.builtin.git:`
-# once the repo is upstream.
 - name: Copy docker/wordpress assets to the target
   ansible.builtin.copy:
     src: "{{ playbook_dir }}/docker/wordpress/"
@@ -77,7 +73,7 @@
     - "{{ paleo_host_port }}"
 
 # MVP shortcut: VM builds its own image. Production should pull a versioned
-# image from a registry built by CI (mirror matomo-ansible workflows).
+# image from a registry built by CI.
 - name: Build WordPress image on the target
   ansible.builtin.command:
     cmd: docker compose build

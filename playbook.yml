@@ -2,6 +2,7 @@
 # copyright Utrecht University
 # This playbook deploys all Paleo sites on the target VM.
 
+# Derived from Matomo
 - name: Local checks
   hosts: localhost
   gather_facts: false
@@ -18,6 +19,10 @@
     - common
     - docker_compose
     - paleo_wordpress
+    - role: paleo_backup
+      paleo_backup_kind: wordpress
+      paleo_backup_unit: paleo-backup
+      paleo_backup_after_service: paleo-wp.service
 
 - name: Provision Paleo static site
   hosts: static_sites
@@ -26,3 +31,7 @@
     - common
     - docker_compose
     - paleo_static
+    - role: paleo_backup
+      paleo_backup_kind: static
+      paleo_backup_unit: paleo-static-backup
+      paleo_backup_after_service: paleo-static.service

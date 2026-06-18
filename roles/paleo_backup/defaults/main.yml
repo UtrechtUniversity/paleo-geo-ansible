@@ -1,0 +1,21 @@
+---
+# copyright Utrecht University
+
+# Defaults for the paleo_backup role.
+
+paleo_user: paleo
+
+# Working directory
+paleo_backup_stack_dir: "/home/{{ paleo_user }}/paleo-ansible/docker/{{ paleo_backup_kind }}"
+
+# Where backups land on VM
+paleo_backup_root: "/home/{{ paleo_user }}/paleo-backups"
+
+# Scheduled backups via a systemd timer.
+paleo_backup_schedule_enabled: true
+
+# systemd OnCalendar expression. Default: every Sunday at 02:00.
+paleo_backup_oncalendar: "Sun *-*-* 02:00:00"
+
+# Delete backups older than this many days (on-VM retention).
+paleo_backup_retention_days: 21

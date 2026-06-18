@@ -36,6 +36,28 @@ echo "192.168.70.11 static.paleo.test" | sudo tee -a /etc/hosts
 
 Not defined yet, to be added.
 
+## Backup & restore
+
+A systemd timer backs up each site weekly (see `paleo_backup`). Backups land in
+`/home/paleo/paleo-backups/<site>/` on the VM. Restore is disaster recovery on the **same host**.
+
+```bash
+# On-demand backup
+ansible-playbook backup.yml -e site=wordpress      # or -e site=static
+
+# List backups on the VM
+vagrant ssh -c 'ls -t /home/paleo/paleo-backups/wordpress/'
+
+# Restore one (overwrites the live site; runs with --force)
+ansible-playbook restore.yml -e site=wordpress \
+  -e backup=/home/paleo/paleo-backups/wordpress/<file>.tar.gz
+```
+
 ## Design notes
 
-To be added.
+### License
+
+This project is licensed under the **GNU General Public License v3.0**.
+See the [LICENSE](LICENSE) file for the full text.
+
+Copyright Utrecht University.

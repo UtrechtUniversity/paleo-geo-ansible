@@ -1,7 +1,7 @@
 ---
 # copyright Utrecht University
 
-# paleo_static role — deploys a static-site Apache stack to a single host.
+# paleo_static role — deploys a static-site
 
 - name: Ensure paleo group exists
   ansible.builtin.group:
@@ -22,7 +22,7 @@
     group: "{{ paleo_user }}"
     mode: '0755'
 
-# MVP shortcut: copy the docker/static/ tree from the Ansible controller.
+# MVP shortcut: copy the docker/static/ tree
 - name: Copy docker/static assets to the target
   ansible.builtin.copy:
     src: "{{ playbook_dir }}/docker/static/"
@@ -31,6 +31,7 @@
     group: "{{ paleo_user }}"
     mode: preserve
 
+# Static mode is prepared for production use, no certs for now
 - name: Validate paleo_cert_mode
   ansible.builtin.fail:
     msg: "paleo_cert_mode must be 'selfsigned' or 'static'"
@@ -79,6 +80,7 @@
     chdir: "/home/{{ paleo_user }}/paleo-ansible/docker/static"
   changed_when: true
 
+# Register the service with systemd
 - name: Install paleo-static.service systemd unit
   ansible.builtin.template:
     src: paleo-static.service.j2

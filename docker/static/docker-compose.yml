@@ -2,25 +2,35 @@
 # copyright Utrecht University
 
 volumes:
+  # Docroot content lives in a volume, not baked into the iamge.
+  # For the purpose of mimicing production static site.
+  # Mounted to the VM path at /var/lib/docker/volumes/
+  # For the first up, an index.html is baked into image.
+  paleo_static_html:
   paleo_static_apache_certs:
 
 services:
 
   static:
     container_name: paleo-static
+    # MVP shortcut, pin the tag in production
     image: paleo-static:latest
     build:
       context: ./images/static
       dockerfile: Dockerfile
     restart: always
     ports:
-      - "${PALEO_HOST_IP}:80:80"
+      - "${PALEO_HOST_IP}:80:80" # Redirect to HTTPS
       - "${PALEO_HOST_IP}:${PALEO_HOST_PORT}:443"
     sysctls:
+      # Allow www-data user to bind port >= 0
       net.ipv4.ip_unprivileged_port_start: 0
     volumes:
+      # Private :Z label for SELinux, only single container can access it (not shared to multiple containers)
+      - paleo_static_html:/var/www/html:Z
       # Apache cert store persists self-signed certs across container restarts.
       - paleo_static_apache_certs:/etc/apache2/certs:Z
+      # Bind mount
       - ./import-certificates:/etc/import-certificates
     environment:
       - PALEO_HOST=${PALEO_HOST}

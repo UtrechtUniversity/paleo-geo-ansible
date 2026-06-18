@@ -1,0 +1,12 @@
+# copyright Utrecht University
+# {{ ansible_managed }}
+[Unit]
+Description=Paleo Earth {{ paleo_backup_kind }} backup schedule
+
+[Timer]
+OnCalendar={{ paleo_backup_oncalendar }}
+# Catch up a missed run if the VM was off at the scheduled time.
+Persistent=true
+
+[Install]
+WantedBy=timers.target

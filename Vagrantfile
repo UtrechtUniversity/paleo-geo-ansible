@@ -1,7 +1,6 @@
 # coding: utf-8
 # copyright Utrecht University
 # -*- mode: ruby -*-
-# vi: set ft=ruby :
 
 # Vagrant configuration for a Paleo Earth development VM.
 VAGRANT_DEFAULT_PROVIDER = "libvirt"

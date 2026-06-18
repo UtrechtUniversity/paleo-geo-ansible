@@ -7,6 +7,7 @@
     state: present
   notify: Restart firewall
 
+# Ports open per each site's own rule
 - name: Ensure firewalld is running and enabled
   ansible.builtin.service:
     name: firewalld

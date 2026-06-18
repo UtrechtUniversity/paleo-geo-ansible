@@ -1,0 +1,19 @@
+# copyright Utrecht University
+# {{ ansible_managed }}
+# One-shot service: runs backup.sh once, then prunes backups past retention.
+# Triggered by {{ paleo_backup_unit }}.timer (not enabled on its own).
+[Unit]
+Description=Paleo Earth {{ paleo_backup_kind }} backup
+After=docker.service {{ paleo_backup_after_service }}
+Requires=docker.service
+
+[Service]
+Type=oneshot
+User={{ paleo_user }}
+Group={{ paleo_user }}
+WorkingDirectory={{ paleo_backup_stack_dir }}
+# backup.sh reads its destination from PALEO_BACKUP_ROOT.
+Environment=PALEO_BACKUP_ROOT={{ paleo_backup_root }}/{{ paleo_backup_kind }}
+ExecStart={{ paleo_backup_stack_dir }}/backup.sh
+# Retention: drop backups older than the configured age.
+ExecStartPost=/usr/bin/find {{ paleo_backup_root }}/{{ paleo_backup_kind }} -type f -name '*.tar.gz' -mtime +{{ paleo_backup_retention_days }} -delete
