@@ -46,18 +46,14 @@ A systemd timer backs up each site weekly (see `paleo_backup`). Backups land in
 ansible-playbook backup.yml -e site=wordpress      # or -e site=static
 
 # List backups on the VM
-vagrant ssh -c 'ls -t /home/paleo/paleo-backups/wordpress/'
+vagrant ssh -c 'sudo ls -t /home/paleo/paleo-backups/wordpress/'
 
 # Restore one (overwrites the live site; runs with --force)
 ansible-playbook restore.yml -e site=wordpress \
   -e backup=/home/paleo/paleo-backups/wordpress/<file>.tar.gz
 ```
 
-## Design notes
-
 ### License
 
 This project is licensed under the **GNU General Public License v3.0**.
 See the [LICENSE](LICENSE) file for the full text.
-
-Copyright Utrecht University.
