@@ -5,6 +5,7 @@ volumes:
   paleo_wp_db_data:
   # paleo_wp_html holds the full WordPress install. The official wordpress
   # image populates it on first boot and writes wp-config.php here.
+  # Mounted to the VM path at /var/lib/docker/volumes/
   paleo_wp_html:
   paleo_wp_apache_certs:
 

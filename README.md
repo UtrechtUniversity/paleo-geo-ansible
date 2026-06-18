@@ -53,6 +53,26 @@ ansible-playbook restore.yml -e site=wordpress \
   -e backup=/home/paleo/paleo-backups/wordpress/<file>.tar.gz
 ```
 
+## Volume & mount paths
+
+Named Docker volumes stay under `/var/lib/docker/volumes/<name>/_data` on the VM.
+
+### WordPress site
+
+| Volume / mount | VM path | Container path |
+| --- | --- | --- |
+| `paleo_wp_html` (named) | `/var/lib/docker/volumes/paleo_wp_html/_data` | `/var/www/html` |
+| `paleo_wp_db_data` (named) | `/var/lib/docker/volumes/paleo_wp_db_data/_data` | `/var/lib/mysql` |
+| `paleo_wp_apache_certs` (named) | `/var/lib/docker/volumes/paleo_wp_apache_certs/_data` | `/etc/apache2/certs` |
+| `import-certificates/` (bind) | `/home/paleo/paleo-ansible/docker/wordpress/import-certificates/` | `/etc/import-certificates` |
+
+### Static site
+
+| Volume / mount | VM path | Container path | What it holds |
+| --- | --- | --- | --- |
+| `paleo_static_html` (named) | `/var/lib/docker/volumes/paleo_static_html/_data` | `/var/www/html` |
+| `paleo_static_apache_certs` (named) | `/var/lib/docker/volumes/paleo_static_apache_certs/_data` | `/etc/apache2/certs` |
+
 ### License
 
 This project is licensed under the **GNU General Public License v3.0**.
