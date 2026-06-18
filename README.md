@@ -68,8 +68,8 @@ Named Docker volumes stay under `/var/lib/docker/volumes/<name>/_data` on the VM
 
 ### Static site
 
-| Volume / mount | VM path | Container path | What it holds |
-| --- | --- | --- | --- |
+| Volume / mount | VM path | Container path |
+| --- | --- | --- |
 | `paleo_static_html` (named) | `/var/lib/docker/volumes/paleo_static_html/_data` | `/var/www/html` |
 | `paleo_static_apache_certs` (named) | `/var/lib/docker/volumes/paleo_static_apache_certs/_data` | `/etc/apache2/certs` |
 
