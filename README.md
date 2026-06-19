@@ -48,7 +48,7 @@ ansible-playbook backup.yml -e site=wordpress      # or -e site=static
 # List backups on the VM
 vagrant ssh -c 'sudo ls -t /home/paleo/paleo-backups/wordpress/'
 
-# Restore one (overwrites the live site; runs with --force)
+# Restore a backup
 ansible-playbook restore.yml -e site=wordpress \
   -e backup=/home/paleo/paleo-backups/wordpress/<file>.tar.gz
 ```
