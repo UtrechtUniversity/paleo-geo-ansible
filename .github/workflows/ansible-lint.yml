@@ -1,0 +1,24 @@
+name: Ansible Lint
+
+on:
+  push:
+    paths-ignore:
+    - 'README.md'
+    - 'Vagrantfile'
+    - 'docs/**'
+    - 'docker/**'
+  pull_request:
+    paths-ignore:
+    - 'README.md'
+    - 'Vagrantfile'
+    - 'docker/**'
+    - 'docs/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Run ansible-lint
+        uses: ansible/ansible-lint@v26.4.0
