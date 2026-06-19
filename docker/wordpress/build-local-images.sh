@@ -4,6 +4,7 @@
 set -e
 cd "$(dirname "$0")/images"
 
+# shellcheck disable=SC2043  # single image today; loop kept for when more are added
 for image in wordpress
 do  cd "$image"
     echo "Building image $image ..."

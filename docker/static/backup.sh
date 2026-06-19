@@ -31,6 +31,7 @@ die() { echo "[$(ts)] ERROR: $*" >&2; exit 1; }
 
 # Auto-export vars to env
 set -a
+# shellcheck source=/dev/null
 source "${STACK_DIR}/.env"
 # Turn off auto-export
 set +a

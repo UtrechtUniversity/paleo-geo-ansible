@@ -66,6 +66,7 @@ tar xzf "${BACKUP}" -C "${WORK_DIR}"
 for f in db.sql html.tar.gz manifest.env; do
     [ -f "${WORK_DIR}/${f}" ] || die "backup missing ${f}; not a valid backup file?"
 done
+# shellcheck source=/dev/null
 source "${WORK_DIR}/manifest.env"
 say "Backup: host=${PALEO_HOST:-?} wp=${WORDPRESS_VERSION:-?} created=${PALEO_BACKUP_CREATED:-?}"
 
