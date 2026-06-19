@@ -14,22 +14,40 @@ This is the **MVP** of a reusable base. The pattern is borrowed from
 [`UtrechtUniversity/matomo-ansible`](https://github.com/UtrechtUniversity/matomo-ansible),
 adapted to a LAMP + WordPress stack.
 
+## Requirements
+
+The development workflow uses Vagrant with the **libvirt** provider, so it
+currently targets a **Linux host**.
+
+### Control machine requirements
+
+The control node (your laptop) runs `ansible-playbook` and orchestrates the VM:
+
+| Requirement | Notes |
+| --- | --- |
+| [KVM/QEMU + libvirt](https://libvirt.org/) | The Vagrant provider is libvirt |
+| [Vagrant](https://developer.hashicorp.com/vagrant/install) (>= 2.3.x) + `vagrant-libvirt` plugin | Install the plugin with `vagrant plugin install vagrant-libvirt` |
+| [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/index.html) (>= 2.11) | Enforced |
+
 ## Running it
 
 ### Development (Vagrant on Linux host)
 
 ```bash
-# 1. Bring up the VM
+# 1. Install required Ansible collections
+ansible-galaxy collection install -r requirements.yml
+
+# 2. Bring up the VM
 vagrant up
 
-# 2. Deploy
+# 3. Deploy
 ansible-playbook playbook.yml
 
-# 3. Add to /etc/hosts
+# 4. Add to /etc/hosts
 echo "192.168.70.10 www.paleo.test"    | sudo tee -a /etc/hosts
 echo "192.168.70.11 static.paleo.test" | sudo tee -a /etc/hosts
 
-# 4. Browse to https://www.paleo.test and https://static.paleo.test
+# 5. Browse to https://www.paleo.test and https://static.paleo.test
 ```
 
 ### Production
@@ -73,7 +91,7 @@ Named Docker volumes stay under `/var/lib/docker/volumes/<name>/_data` on the VM
 | `paleo_static_html` (named) | `/var/lib/docker/volumes/paleo_static_html/_data` | `/var/www/html` |
 | `paleo_static_apache_certs` (named) | `/var/lib/docker/volumes/paleo_static_apache_certs/_data` | `/etc/apache2/certs` |
 
-### License
+## License
 
 This project is licensed under the **GNU General Public License v3.0**.
 See the [LICENSE](LICENSE) file for the full text.
