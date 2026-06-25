@@ -33,21 +33,36 @@ The control node (your laptop) runs `ansible-playbook` and orchestrates the VM:
 
 ### Development (Vagrant on Linux host)
 
+1. Install required Ansible collections
 ```bash
-# 1. Install required Ansible collections
 ansible-galaxy collection install -r requirements.yml
+```
 
-# 2. Bring up the VM
+2. Bring up the VM
+```bash
 vagrant up
+```
 
-# 3. Deploy
+3. Deploy
+```bash
 ansible-playbook playbook.yml
+```
 
-# 4. Add to /etc/hosts
+4. Add website names to /etc/hosts
+```bash
 echo "192.168.70.10 www.paleo.test"    | sudo tee -a /etc/hosts
 echo "192.168.70.11 static.paleo.test" | sudo tee -a /etc/hosts
+```
 
-# 5. Browse to https://www.paleo.test and https://static.paleo.test
+5. Browse to <https://www.paleo.test> and <https://static.paleo.test>
+
+6. You can then log in using `vagrant ssh`. Depending on your `umask`
+   setting, you may need to update the permissions of the Vagrant private
+   key.
+```bash
+cd paleo-geo-ansible
+chmod 0600 vagrant/ssh/vagrant
+vagrant ssh
 ```
 
 ### Production
