@@ -1,0 +1,46 @@
+---
+name: "Build Paleo Wordpress image and push it to registry"
+
+on:
+  push:
+    branches:
+      - 'main'
+    paths:
+      - '.github/workflows/build-push-image-paleo-wordpress.yml'
+      - 'docker/wordpress/images/wordpress'
+
+jobs:
+  push-image:
+    if: github.repository == 'utrechtuniversity/paleo-geo-ansible'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - name: Extract branch name
+      shell: bash
+      run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+      id: extract_branch
+
+    - name: Check out Paleo-geo-ansible repository
+      uses: actions/checkout@v7
+      with:
+        path: paleo-geo-ansible
+        repository: UtrechtUniversity/paleo-geo-ansible
+        ref: ${{ steps.extract_branch.outputs.branch }}
+
+    - name: Authenticate to the container registry
+      uses: docker/login-action@v4
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v7
+      with:
+        context: paleo-geo-ansible/docker/wordpress/images/wordpress
+        file: paleo-geo-ansible/docker/wordpress/images/wordpress/Dockerfile
+        push: true
+        tags: ghcr.io/utrechtuniversity/paleo-wordpress:latest
