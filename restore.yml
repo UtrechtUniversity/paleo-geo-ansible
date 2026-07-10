@@ -40,6 +40,7 @@
         cmd: >-
           ./restore.sh --backup {{ backup }} --force
         chdir: "/home/{{ paleo_user }}/paleo-ansible/docker/{{ site }}"
+      become: true
       become_user: "{{ paleo_user }}"
       register: paleo_restore_out
       changed_when: true

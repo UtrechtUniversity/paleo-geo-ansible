@@ -31,6 +31,7 @@
       ansible.builtin.command:
         cmd: ./backup.sh
         chdir: "/home/{{ paleo_user }}/paleo-ansible/docker/{{ site }}"
+      become: true
       become_user: "{{ paleo_user }}"
       environment:
         PALEO_BACKUP_ROOT: "{{ paleo_backup_root }}/{{ site }}"
