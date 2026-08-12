@@ -6,9 +6,11 @@ for the Paleo Earth research group at Utrecht University:
 - a **WordPress site** (Apache + PHP + MariaDB) at `www.paleo.test`
 - a **static site** (Apache only, no PHP/database) at `static.paleo.test`
 
-Each site runs as its own Docker Compose stack bound to its own IP on the
-same VM (192.168.70.10 and 192.168.70.11), so both use standard port 443
-with no reverse proxy.
+Each site runs as its own Docker behind a systemd unit. An **nginx
+reverse proxy** terminates TLS on one IP and routes to each site by hostname, so
+all sites can share a single public IP. Both the static site and WordPress run as
+plain-HTTP backends behind the proxy, reached by container name over the shared
+`paleo_net` network.
 
 This is the **MVP** of a reusable base. The pattern is borrowed from
 [`UtrechtUniversity/matomo-ansible`](https://github.com/UtrechtUniversity/matomo-ansible),
@@ -50,7 +52,8 @@ ansible-playbook playbook.yml
 
 4. Add website names to /etc/hosts
 ```bash
-echo "192.168.70.10 www.paleo.test"    | sudo tee -a /etc/hosts
+# Both hostnames resolve to the reverse proxy (.11).
+echo "192.168.70.11 www.paleo.test"    | sudo tee -a /etc/hosts
 echo "192.168.70.11 static.paleo.test" | sudo tee -a /etc/hosts
 ```
 
@@ -64,10 +67,6 @@ cd paleo-geo-ansible
 chmod 0600 vagrant/ssh/vagrant
 vagrant ssh
 ```
-
-### Production
-
-Not defined yet, to be added.
 
 ## Backup & restore
 
@@ -96,15 +95,14 @@ Named Docker volumes stay under `/var/lib/docker/volumes/<name>/_data` on the VM
 | --- | --- | --- |
 | `paleo_wp_html` (named) | `/var/lib/docker/volumes/paleo_wp_html/_data` | `/var/www/html` |
 | `paleo_wp_db_data` (named) | `/var/lib/docker/volumes/paleo_wp_db_data/_data` | `/var/lib/mysql` |
-| `paleo_wp_apache_certs` (named) | `/var/lib/docker/volumes/paleo_wp_apache_certs/_data` | `/etc/apache2/certs` |
-| `import-certificates/` (bind) | `/home/paleo/paleo-ansible/docker/wordpress/import-certificates/` | `/etc/import-certificates` |
+
+(TLS/cert mounts moved to the reverse proxy — the WordPress backend serves plain HTTP.)
 
 ### Static site
 
 | Volume / mount | VM path | Container path |
 | --- | --- | --- |
 | `paleo_static_html` (named) | `/var/lib/docker/volumes/paleo_static_html/_data` | `/var/www/html` |
-| `paleo_static_apache_certs` (named) | `/var/lib/docker/volumes/paleo_static_apache_certs/_data` | `/etc/apache2/certs` |
 
 ## License
 
