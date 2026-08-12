@@ -12,6 +12,14 @@
         that: "ansible_version.full is version('2.11', '>=')"
         msg: "You must update Ansible to at least 2.11 to deploy Paleo."
 
+- name: Provision Paleo reverse proxy
+  hosts: proxy
+  become: true
+  roles:
+    - common
+    - docker_compose
+    - paleo_proxy
+
 - name: Provision Paleo WordPress site
   hosts: wordpress_sites
   become: true

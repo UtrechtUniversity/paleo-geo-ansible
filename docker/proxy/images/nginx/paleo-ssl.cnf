@@ -1,0 +1,26 @@
+# copyright Utrecht University
+# openssl req config for the self-signed certificates.
+# nginx-entrypoint.sh sets the CN and append the SAN to this file.
+
+[ req ]
+default_bits        = 4096
+default_md          = sha256
+prompt              = no
+encrypt_key         = no
+distinguished_name  = dn
+req_extensions      = req_ext
+
+[ dn ]
+CN = PALEO_CN
+C  = NL
+O  = Paleo Earth
+OU = Utrecht University
+L  = Utrecht
+
+# subjectAltName must live in its own extension section — the one named by
+# req_extensions above and by `-extensions req_ext` on the openssl CLI. Without
+# this [ req_ext ] header the line falls under [ dn ] and openssl errors with
+# "Error checking x509 extension section req_ext". The entrypoint appends
+# [ alt_names ] (DNS.1 .. DNS.N) after this.
+[ req_ext ]
+subjectAltName = @alt_names

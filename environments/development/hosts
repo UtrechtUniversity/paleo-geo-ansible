@@ -4,3 +4,6 @@ paleo-wp     ansible_host=192.168.70.10
 
 [static_sites]
 paleo-static ansible_host=192.168.70.10
+
+[proxy]
+paleo-proxy  ansible_host=192.168.70.10

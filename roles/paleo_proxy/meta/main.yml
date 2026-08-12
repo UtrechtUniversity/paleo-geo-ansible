@@ -1,0 +1,11 @@
+---
+# copyright Utrecht University
+
+galaxy_info:
+  author: Paleo Earth (UU)
+  description: Deploy the nginx reverse proxy that fronts all Paleo sites
+  license: MIT
+  min_ansible_version: '2.11'
+  platforms:
+    - name: EL
+      version: 9
