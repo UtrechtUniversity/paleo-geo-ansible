@@ -1,0 +1,16 @@
+---
+name: "Smoke-test the Paleo nginx image"
+
+on: [push, pull_request]
+
+jobs:
+  smoke:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Build the proxy image
+        run: docker build -t paleo-nginx:smoke docker/proxy/images/nginx
+
+      - name: Run the smoke test
+        run: ./docker/proxy/images/nginx/smoke-test.sh paleo-nginx:smoke
