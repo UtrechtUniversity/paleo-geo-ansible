@@ -7,7 +7,8 @@ on:
       - 'main'
     paths:
       - '.github/workflows/build-push-image-paleo-wordpress.yml'
-      - 'docker/wordpress/images/wordpress'
+      # /** is required: a bare directory name never matches anything inside it.
+      - 'docker/wordpress/images/wordpress/**'
 
 jobs:
   push-image:

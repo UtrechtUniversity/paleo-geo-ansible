@@ -28,7 +28,9 @@ services:
     volumes:
       - paleo_proxy_certs:/etc/nginx/certs:Z
       # Place for real certs, named <host>.pem/.key.
-      - ./import-certificates:/etc/import-certificates
+      # ro: the container only reads these.
+      # Z:  SELinux private label. Required on EL9 with enforcing mode.
+      - ./import-certificates:/etc/import-certificates:ro,Z
     networks:
       - paleo_net
 

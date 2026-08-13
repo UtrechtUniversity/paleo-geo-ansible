@@ -6,7 +6,7 @@ for the Paleo Earth research group at Utrecht University:
 - a **WordPress site** (Apache + PHP + MariaDB) at `www.paleo.test`
 - a **static site** (Apache only, no PHP/database) at `static.paleo.test`
 
-Each site runs as its own Docker behind a systemd unit. An **nginx
+Each site runs as its own Docker. An **nginx
 reverse proxy** terminates TLS on one IP and routes to each site by hostname, so
 all sites can share a single public IP. Both the static site and WordPress run as
 plain-HTTP backends behind the proxy, reached by container name over the shared

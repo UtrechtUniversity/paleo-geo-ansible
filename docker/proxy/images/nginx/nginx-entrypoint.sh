@@ -66,13 +66,28 @@ self_sign() {
     rm -f "$cnf"
 }
 
+# cert_covers NAME HOST... — true if NAME.pem is currently valid for every HOST.
+cert_covers() {
+    name="$1"; shift
+    for h in "$@"; do
+        case "$(openssl x509 -in "$CERT_DIR/$name.pem" -noout -checkhost "$h" 2>/dev/null)" in
+            *"does match certificate") ;;
+            *) return 1 ;;
+        esac
+    done
+    return 0
+}
+
 ensure_cert() {
     name="$1"
     if has_import "$name"; then
         import_cert "$name"
-    elif [ -f "$CERT_DIR/$name.pem" ] && [ -f "$CERT_DIR/$name.key" ]; then
+    elif [ -f "$CERT_DIR/$name.pem" ] && [ -f "$CERT_DIR/$name.key" ] && cert_covers "$@"; then
         say "reusing existing certificate '$name'"
     else
+        if [ -f "$CERT_DIR/$name.pem" ]; then
+            say "certificate '$name' does not cover every requested hostname (${*:2}); regenerating"
+        fi
         self_sign "$@"
     fi
     if [ ! -s "$CERT_DIR/$name.pem" ] || [ ! -s "$CERT_DIR/$name.key" ]; then
@@ -129,7 +144,14 @@ for pair in $PALEO_SITES; do
 done
 
 say "validating nginx configuration"
-nginx -t
+# There is no `set -e` in this script, so check explicitly. Without this the
+# error below scrolls past and `exec nginx` dies with the same message anyway,
+# throwing away the clear diagnostic.
+if ! nginx -t; then
+    say "ERROR: generated nginx configuration is invalid; aborting"
+    say "       inspect $CONF_DIR/ inside the container to see what was rendered"
+    exit 1
+fi
 
 say "starting nginx"
 # Set nginx PID 1

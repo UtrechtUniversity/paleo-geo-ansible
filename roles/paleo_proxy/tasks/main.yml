@@ -30,6 +30,46 @@
     owner: "{{ paleo_user }}"
     group: "{{ paleo_user }}"
     mode: preserve
+  notify: Restart paleo-proxy
+
+- name: Validate paleo_proxy_cert_mode
+  ansible.builtin.fail:
+    msg: >-
+      paleo_proxy_cert_mode must be 'selfsigned' or 'static'
+      (currently: {{ paleo_proxy_cert_mode }})
+  when: paleo_proxy_cert_mode not in ["selfsigned", "static"]
+
+- name: Fail early if static mode is selected without a certificate
+  ansible.builtin.fail:
+    msg: >-
+      paleo_proxy_cert_mode is 'static' but paleo_proxy_cert and/or
+      paleo_proxy_cert_key are unset. Set both in this environment's
+      (vaulted) host_vars.
+  when:
+    - paleo_proxy_cert_mode == "static"
+    - paleo_proxy_cert == "notset" or paleo_proxy_cert_key == "notset"
+
+- name: Upload the shared multi-SAN certificate
+  ansible.builtin.copy:
+    dest: "/home/{{ paleo_user }}/paleo-ansible/docker/proxy/import-certificates/{{ paleo_proxy_cert_name }}.pem"
+    content: "{{ paleo_proxy_cert }}"
+    owner: "{{ paleo_user }}"
+    group: "{{ paleo_user }}"
+    # Public half of the pair — readable is correct.
+    mode: '0644'
+  when: paleo_proxy_cert_mode == "static"
+  notify: Restart paleo-proxy
+
+- name: Upload the shared certificate private key
+  ansible.builtin.copy:
+    dest: "/home/{{ paleo_user }}/paleo-ansible/docker/proxy/import-certificates/{{ paleo_proxy_cert_name }}.key"
+    content: "{{ paleo_proxy_cert_key }}"
+    owner: "{{ paleo_user }}"
+    group: "{{ paleo_user }}"
+    mode: '0600'
+  no_log: true
+  when: paleo_proxy_cert_mode == "static"
+  notify: Restart paleo-proxy
 
 - name: Template Docker Compose .env for the proxy
   ansible.builtin.template:
@@ -38,6 +78,8 @@
     owner: "{{ paleo_user }}"
     group: "{{ paleo_user }}"
     mode: '0640'
+  # PALEO_SITES / PALEO_CERT live here — a change must reach the container.
+  notify: Restart paleo-proxy
 
 - name: Open firewall ports for HTTP and HTTPS
   ansible.posix.firewalld:
@@ -63,6 +105,7 @@
     owner: root
     group: root
     mode: '0644'
+  notify: Restart paleo-proxy
 
 - name: Enable and start paleo-proxy.service
   ansible.builtin.service:

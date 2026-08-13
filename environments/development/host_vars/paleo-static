@@ -4,11 +4,4 @@
 ########################
 # Paleo static site
 ########################
-paleo_host_name: static.paleo.test
-paleo_host_ip: 192.168.70.11
-paleo_host_port: 443
-
-########################
-# TLS
-########################
-paleo_cert_mode: selfsigned
+# No per-host variables. The static backend serves plain HTTP on paleo_net and has no identity of its hostname.
