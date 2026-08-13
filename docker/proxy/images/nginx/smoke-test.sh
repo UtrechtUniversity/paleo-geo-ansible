@@ -31,7 +31,7 @@ assert() {
     fi
 }
 
-# shellcheck disable=SC2329
+# shellcheck disable=SC2317,SC2329
 cleanup() {
     docker rm -f "$CTR" >/dev/null 2>&1
     docker volume rm -f "$VOL" >/dev/null 2>&1
