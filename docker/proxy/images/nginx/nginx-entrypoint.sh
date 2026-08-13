@@ -66,27 +66,37 @@ self_sign() {
     rm -f "$cnf"
 }
 
-# cert_covers NAME HOST... — true if NAME.pem is currently valid for every HOST.
-cert_covers() {
-    name="$1"; shift
+# cert_missing_hosts
+cert_missing_hosts() {
+    local name="$1"; shift
+    local h
     for h in "$@"; do
         case "$(openssl x509 -in "$CERT_DIR/$name.pem" -noout -checkhost "$h" 2>/dev/null)" in
             *"does match certificate") ;;
-            *) return 1 ;;
+            *) printf '%s ' "$h" ;;
         esac
     done
-    return 0
+}
+
+# cert_covers — true if NAME.pem is currently valid for every HOST.
+cert_covers() {
+    [ -z "$(cert_missing_hosts "$@")" ]
 }
 
 ensure_cert() {
     name="$1"
     if has_import "$name"; then
         import_cert "$name"
+        missing="$(cert_missing_hosts "$@")"
+        if [ -n "$missing" ]; then
+            say "WARNING: operator certificate '$name' does not cover: ${missing% }"
+            say "         those hostnames will fail TLS validation in browsers"
+        fi
     elif [ -f "$CERT_DIR/$name.pem" ] && [ -f "$CERT_DIR/$name.key" ] && cert_covers "$@"; then
         say "reusing existing certificate '$name'"
     else
         if [ -f "$CERT_DIR/$name.pem" ]; then
-            say "certificate '$name' does not cover every requested hostname (${*:2}); regenerating"
+            say "certificate '$name' does not cover: $(cert_missing_hosts "$@"); regenerating"
         fi
         self_sign "$@"
     fi

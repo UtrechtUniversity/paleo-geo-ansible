@@ -6,6 +6,8 @@ venv*/
 # Local-only working docs (project.md, reverse-proxy.md, archive/) — not published.
 docs/
 
+docker/*/.env
+
 # Operator TLS material dropped into the reverse proxy — never commit
 # (keys/certs the network team supplies). Keep the directory via .gitkeep only.
 docker/proxy/import-certificates/*

@@ -22,8 +22,8 @@ services:
       - MARIADB_DISABLE_UPGRADE_BACKUP=1
       - MARIADB_INITDB_SKIP_TZINFO=1
       - MARIADB_USER=wordpress
-      - MARIADB_PASSWORD=${MARIADB_PASSWORD}
-      - MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}
+      - MARIADB_PASSWORD=${MARIADB_PASSWORD-devpassword}
+      - MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD-devrootpassword}
 
   wordpress:
     container_name: paleo-wp
@@ -45,12 +45,12 @@ services:
       - paleo_net
     environment:
       # Consumed by paleo-init.sh (vhost hostname substitution).
-      - PALEO_HOST=${PALEO_HOST}
+      - PALEO_HOST=${PALEO_HOST-www.paleo.test}
       # Consumed by the official entrypoint to generate wp-config.php.
       - WORDPRESS_DB_HOST=database
       - WORDPRESS_DB_NAME=wordpress
       - WORDPRESS_DB_USER=wordpress
-      - WORDPRESS_DB_PASSWORD=${MARIADB_PASSWORD}
+      - WORDPRESS_DB_PASSWORD=${MARIADB_PASSWORD-devpassword}
       - WORDPRESS_TABLE_PREFIX=wp_
       - |
         WORDPRESS_CONFIG_EXTRA=
@@ -84,12 +84,12 @@ services:
       - WORDPRESS_DB_HOST=database
       - WORDPRESS_DB_NAME=wordpress
       - WORDPRESS_DB_USER=wordpress
-      - WORDPRESS_DB_PASSWORD=${MARIADB_PASSWORD}
-      - PALEO_HOST=${PALEO_HOST}
-      - PALEO_FIRST_SITE_TITLE=${PALEO_FIRST_SITE_TITLE}
-      - PALEO_FIRST_USER_NAME=${PALEO_FIRST_USER_NAME}
-      - PALEO_FIRST_USER_EMAIL=${PALEO_FIRST_USER_EMAIL}
-      - PALEO_FIRST_USER_PASSWORD=${PALEO_FIRST_USER_PASSWORD}
+      - WORDPRESS_DB_PASSWORD=${MARIADB_PASSWORD-devpassword}
+      - PALEO_HOST=${PALEO_HOST-www.paleo.test}
+      - PALEO_FIRST_SITE_TITLE=${PALEO_FIRST_SITE_TITLE-Paleo Earth Demo - WordPress site}
+      - PALEO_FIRST_USER_NAME=${PALEO_FIRST_USER_NAME-admin}
+      - PALEO_FIRST_USER_EMAIL=${PALEO_FIRST_USER_EMAIL-paleo-example@uu.nl}
+      - PALEO_FIRST_USER_PASSWORD=${PALEO_FIRST_USER_PASSWORD-paleopassword}
     entrypoint: ["/bin/sh", "-c"]
     # $$VAR escapes
     command:

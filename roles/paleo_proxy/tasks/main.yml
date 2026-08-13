@@ -25,11 +25,15 @@
 # MVP: copy the docker/proxy/ tree from the Ansible controller.
 - name: Copy docker/proxy assets to the target
   ansible.builtin.copy:
-    src: "{{ playbook_dir }}/docker/proxy/"
+    src: "{{ playbook_dir }}/docker/proxy/{{ item }}"
     dest: "/home/{{ paleo_user }}/paleo-ansible/docker/proxy/"
     owner: "{{ paleo_user }}"
     group: "{{ paleo_user }}"
     mode: preserve
+  loop:
+    - docker-compose.yml
+    - images
+    - import-certificates
   notify: Restart paleo-proxy
 
 - name: Validate paleo_proxy_cert_mode

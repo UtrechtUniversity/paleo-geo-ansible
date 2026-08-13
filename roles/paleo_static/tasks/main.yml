@@ -24,11 +24,24 @@
 
 - name: Copy docker/static assets to the target
   ansible.builtin.copy:
-    src: "{{ playbook_dir }}/docker/static/"
+    src: "{{ playbook_dir }}/docker/static/{{ item }}"
     dest: "/home/{{ paleo_user }}/paleo-ansible/docker/static/"
     owner: "{{ paleo_user }}"
     group: "{{ paleo_user }}"
     mode: preserve
+  loop:
+    - docker-compose.yml
+    - images
+    - backup.sh
+    - restore.sh
+
+- name: Template Docker Compose .env for the static site
+  ansible.builtin.template:
+    src: env.j2
+    dest: "/home/{{ paleo_user }}/paleo-ansible/docker/static/.env"
+    owner: "{{ paleo_user }}"
+    group: "{{ paleo_user }}"
+    mode: '0640'
 
 - name: Build static image on the target
   ansible.builtin.command:

@@ -3,3 +3,6 @@
 
 # Defaults for the paleo_static role.
 paleo_user: paleo
+
+# Site identity.
+paleo_host_name: static.paleo.test

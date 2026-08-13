@@ -15,6 +15,7 @@ set -uo pipefail
 IMAGE="${1:-paleo-nginx:smoke}"
 VOL="paleo-smoke-certs-$$"
 CTR="paleo-smoke-$$"
+IMPORTDIR="$(mktemp -d)"
 
 fails=0
 info()   { printf '\n== %s\n' "$*"; }
@@ -30,9 +31,11 @@ assert() {
     fi
 }
 
+# shellcheck disable=SC2329
 cleanup() {
     docker rm -f "$CTR" >/dev/null 2>&1
     docker volume rm -f "$VOL" >/dev/null 2>&1
+    rm -rf "$IMPORTDIR"
 }
 trap cleanup EXIT
 
@@ -47,6 +50,7 @@ boot() {
     docker rm -f "$CTR" >/dev/null 2>&1
     docker run -d --name "$CTR" \
         -v "$VOL:/etc/nginx/certs" \
+        -v "$IMPORTDIR:/etc/import-certificates:ro" \
         -e PALEO_SITES="$1" \
         "$IMAGE" >/dev/null || return 1
     for _ in $(seq 40); do
@@ -149,6 +153,28 @@ if [ "$rc" -ne 0 ]; then
     pass "empty PALEO_SITES exits non-zero (got $rc)"
 else
     fail "empty PALEO_SITES exits non-zero (got 0)"
+fi
+
+################################################################################
+info "TEST 6 — an operator certificate that misses a hostname is used, but warned about"
+
+openssl req -x509 -newkey rsa:2048 -sha256 -days 1 -nodes \
+    -keyout "$IMPORTDIR/paleo.key" -out "$IMPORTDIR/paleo.pem" \
+    -subj "/CN=operator-supplied" -addext "subjectAltName=DNS:a.test" >/dev/null 2>&1
+imported_fp="$(openssl x509 -in "$IMPORTDIR/paleo.pem" -noout -fingerprint -sha256)"
+
+if boot "a.test|backend-a b.test|backend-b"; then
+    assert "operator certificate is used as-is, not regenerated" \
+        "$imported_fp" "$(fingerprint)"
+    # For a warning the log is the observable.
+    if docker logs "$CTR" 2>&1 | grep -q "does not cover"; then
+        pass "the uncovered hostname is reported"
+    else
+        fail "the uncovered hostname is reported"
+    fi
+else
+    fail "container boots with an operator certificate"
+    docker logs "$CTR" 2>&1 | tail -20
 fi
 
 ################################################################################
