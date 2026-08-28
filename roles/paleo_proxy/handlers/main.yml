@@ -1,0 +1,8 @@
+---
+# copyright Utrecht University
+
+- name: Restart paleo-proxy
+  ansible.builtin.systemd:
+    name: paleo-proxy
+    state: restarted
+    daemon_reload: true

@@ -7,7 +7,6 @@ volumes:
   # image populates it on first boot and writes wp-config.php here.
   # Mounted to the VM path at /var/lib/docker/volumes/
   paleo_wp_html:
-  paleo_wp_apache_certs:
 
 services:
 
@@ -23,8 +22,8 @@ services:
       - MARIADB_DISABLE_UPGRADE_BACKUP=1
       - MARIADB_INITDB_SKIP_TZINFO=1
       - MARIADB_USER=wordpress
-      - MARIADB_PASSWORD=${MARIADB_PASSWORD}
-      - MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}
+      - MARIADB_PASSWORD=${MARIADB_PASSWORD-devpassword}
+      - MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD-devrootpassword}
 
   wordpress:
     container_name: paleo-wp
@@ -35,30 +34,41 @@ services:
     restart: always
     depends_on:
       - database
-    ports:
-      - "${PALEO_HOST_IP}:80:80"
-      - "${PALEO_HOST_IP}:${PALEO_HOST_PORT}:443"
-    sysctls:
-      net.ipv4.ip_unprivileged_port_start: 0
+    expose:
+      - "80"
     volumes:
       # Shared with wp-installer, so use :z (shared SELinux label), not :Z.
       - paleo_wp_html:/var/www/html:z
-      - paleo_wp_apache_certs:/etc/apache2/certs:Z
-      - ./import-certificates:/etc/import-certificates
+    networks:
+      # default: reach the database container; paleo_net: reachable by the proxy.
+      - default
+      - paleo_net
     environment:
-      # Consumed by paleo-init.sh (vhost hostname substitution + TLS).
-      - PALEO_HOST=${PALEO_HOST}
+      # Consumed by paleo-init.sh (vhost hostname substitution).
+      - PALEO_HOST=${PALEO_HOST-www.paleo.test}
       # Consumed by the official entrypoint to generate wp-config.php.
       - WORDPRESS_DB_HOST=database
       - WORDPRESS_DB_NAME=wordpress
       - WORDPRESS_DB_USER=wordpress
-      - WORDPRESS_DB_PASSWORD=${MARIADB_PASSWORD}
+      - WORDPRESS_DB_PASSWORD=${MARIADB_PASSWORD-devpassword}
       - WORDPRESS_TABLE_PREFIX=wp_
+      - |
+        WORDPRESS_CONFIG_EXTRA=
+        if (!empty($$_SERVER['HTTP_X_FORWARDED_FOR'])) {
+            $$_SERVER['REMOTE_ADDR'] = trim(explode(',', $$_SERVER['HTTP_X_FORWARDED_FOR'])[0]);
+        }
+        define('WP_HOME', 'https://' . getenv('PALEO_HOST'));
+        define('WP_SITEURL', 'https://' . getenv('PALEO_HOST'));
+        define('FORCE_SSL_ADMIN', true);
 
-  # One-shot first-run installer. 
+  # One-shot first-run installer.
   wp-installer:
     container_name: paleo-wp-installer
     image: wordpress:cli-php8.3
+    # Run as uid/gid 33 to match the Debian runtime's www-data, so files this
+    # helper writes to the shared html volume are owned by the same uid the
+    # apache/php process uses.
+    user: "33:33"
     restart: "no"
     depends_on:
       - database
@@ -67,18 +77,19 @@ services:
       # Same html volume as the wordpress service — shared label (:z).
       - paleo_wp_html:/var/www/html:z
     environment:
+      - HOME=/tmp
       # The shared wp-config.php reads DB settings at runtime via getenv, so
       # the installer needs the same DB vars as the wordpress service —
       # otherwise it falls back to the image default host (e.g, 'mysql').
       - WORDPRESS_DB_HOST=database
       - WORDPRESS_DB_NAME=wordpress
       - WORDPRESS_DB_USER=wordpress
-      - WORDPRESS_DB_PASSWORD=${MARIADB_PASSWORD}
-      - PALEO_HOST=${PALEO_HOST}
-      - PALEO_FIRST_SITE_TITLE=${PALEO_FIRST_SITE_TITLE}
-      - PALEO_FIRST_USER_NAME=${PALEO_FIRST_USER_NAME}
-      - PALEO_FIRST_USER_EMAIL=${PALEO_FIRST_USER_EMAIL}
-      - PALEO_FIRST_USER_PASSWORD=${PALEO_FIRST_USER_PASSWORD}
+      - WORDPRESS_DB_PASSWORD=${MARIADB_PASSWORD-devpassword}
+      - PALEO_HOST=${PALEO_HOST-www.paleo.test}
+      - PALEO_FIRST_SITE_TITLE=${PALEO_FIRST_SITE_TITLE-Paleo Earth Demo - WordPress site}
+      - PALEO_FIRST_USER_NAME=${PALEO_FIRST_USER_NAME-admin}
+      - PALEO_FIRST_USER_EMAIL=${PALEO_FIRST_USER_EMAIL-paleo-example@uu.nl}
+      - PALEO_FIRST_USER_PASSWORD=${PALEO_FIRST_USER_PASSWORD-paleopassword}
     entrypoint: ["/bin/sh", "-c"]
     # $$VAR escapes
     command:
@@ -98,3 +109,8 @@ services:
           sleep 3
         done
         echo "Installer: WordPress is installed."
+
+networks:
+  # Shared across all site stacks.
+  paleo_net:
+    external: true

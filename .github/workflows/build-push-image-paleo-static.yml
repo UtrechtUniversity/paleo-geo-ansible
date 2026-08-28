@@ -7,7 +7,8 @@ on:
       - 'main'
     paths:
       - '.github/workflows/build-push-image-paleo-static.yml'
-      - 'docker/static/images/static'
+      # /** is required: a bare directory name never matches anything inside it.
+      - 'docker/static/images/static/**'
 
 jobs:
   push-image:

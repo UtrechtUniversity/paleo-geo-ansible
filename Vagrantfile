@@ -13,8 +13,8 @@ DOMAIN  = ".paleo.test"
 NETWORK = "192.168.70."
 NETMASK = "255.255.255.0"
 
-# One VM, two IPs. WordPress binds to the first, static binds to the second.
-# Each site gets its own IP:443 — no reverse proxy needed.
+# One VM, two IPs: .10 is the SSH address Ansible connects to; .11 is
+# the reverse proxy's web address. 
 HOSTS = {
   "www" => [[NETWORK + "10", NETWORK + "11"], CPU, RAM, BOX],
 }

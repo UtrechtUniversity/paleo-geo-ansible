@@ -1,0 +1,43 @@
+---
+# copyright Utrecht University
+# The reverse-proxy, terminates TLS and routes each hostname to its site container over paleo_net.
+
+volumes:
+  paleo_proxy_certs:
+
+services:
+
+  proxy:
+    container_name: paleo-proxy
+    image: paleo-nginx:latest
+    # Build with Dockerfile.
+    build:
+      context: ./images/nginx
+      dockerfile: Dockerfile
+    restart: always
+    # Defaults below are for a bare `docker compose up` on a workstation. On a
+    # deployed VM, Ansible writes .env.
+    ports:
+      - "${PALEO_PROXY_IP-127.0.0.1}:80:80"
+      - "${PALEO_PROXY_IP-127.0.0.1}:443:443"
+    environment:
+      # "host|backend" pairs
+      - PALEO_SITES=${PALEO_SITES-static.paleo.test|paleo-static www.paleo.test|paleo-wp}
+      # Basename of the shared multi-SAN cert (<name>.pem/.key)
+      - PALEO_CERT=${PALEO_CERT-paleo}
+      # HTTP port only (no https communication in private network)
+      - PALEO_BACKEND_PORT=80
+    volumes:
+      - paleo_proxy_certs:/etc/nginx/certs:Z
+      # Place for real certs, named <host>.pem/.key.
+      # ro: the container only reads these.
+      # Z:  SELinux private label. Required on EL9 with enforcing mode.
+      - ./import-certificates:/etc/import-certificates:ro,Z
+    networks:
+      - paleo_net
+
+networks:
+  # Private network.
+  paleo_net:
+    # Attach to the pre-existing shared paleo_net
+    external: true

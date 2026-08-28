@@ -26,3 +26,11 @@
     name: docker
     state: started
     enabled: true
+
+- name: Ensure the shared paleo_net Docker network exists
+  ansible.builtin.command: docker network create paleo_net
+  register: paleo_net_create
+  changed_when: paleo_net_create.rc == 0
+  failed_when:
+    - paleo_net_create.rc != 0
+    - "'already exists' not in paleo_net_create.stderr"

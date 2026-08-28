@@ -1,0 +1,25 @@
+---
+name: "Smoke-test the Paleo nginx image"
+
+on: [push, pull_request]
+
+jobs:
+  smoke:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Build the proxy image
+        run: |
+          for attempt in 1 2 3; do
+            if docker build -t paleo-nginx:smoke docker/proxy/images/nginx; then
+              exit 0
+            fi
+            echo "::warning::build attempt ${attempt} failed"
+            sleep $(( attempt * 15 ))
+          done
+          echo "::error::docker build failed after 3 attempts"
+          exit 1
+
+      - name: Run the smoke test
+        run: ./docker/proxy/images/nginx/smoke-test.sh paleo-nginx:smoke

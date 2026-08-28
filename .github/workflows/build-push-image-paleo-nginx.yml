@@ -1,14 +1,14 @@
 ---
-name: "Build Paleo Wordpress image and push it to registry"
+name: "Build Paleo nginx (reverse proxy) image and push it to registry"
 
 on:
   push:
     branches:
       - 'main'
     paths:
-      - '.github/workflows/build-push-image-paleo-wordpress.yml'
-      # /** is required: a bare directory name never matches anything inside it.
-      - 'docker/wordpress/images/wordpress/**'
+      - '.github/workflows/build-push-image-paleo-nginx.yml'
+      # /** is required: a bare directory name never matches anything.
+      - 'docker/proxy/images/nginx/**'
 
 jobs:
   push-image:
@@ -41,7 +41,7 @@ jobs:
     - name: Build and push Docker image
       uses: docker/build-push-action@v7
       with:
-        context: paleo-geo-ansible/docker/wordpress/images/wordpress
-        file: paleo-geo-ansible/docker/wordpress/images/wordpress/Dockerfile
+        context: paleo-geo-ansible/docker/proxy/images/nginx
+        file: paleo-geo-ansible/docker/proxy/images/nginx/Dockerfile
         push: true
-        tags: ghcr.io/utrechtuniversity/paleo-wordpress:latest
+        tags: ghcr.io/utrechtuniversity/paleo-nginx:latest

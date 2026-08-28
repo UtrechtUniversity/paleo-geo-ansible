@@ -1,7 +1,7 @@
 ---
 # copyright Utrecht University
 
-# paleo_static role — deploys a static-site
+# paleo_static role — deploys a static-site backend.
 
 - name: Ensure paleo group exists
   ansible.builtin.group:
@@ -22,40 +22,20 @@
     group: "{{ paleo_user }}"
     mode: '0755'
 
-# MVP shortcut: copy the docker/static/ tree
 - name: Copy docker/static assets to the target
   ansible.builtin.copy:
-    src: "{{ playbook_dir }}/docker/static/"
+    src: "{{ playbook_dir }}/docker/static/{{ item }}"
     dest: "/home/{{ paleo_user }}/paleo-ansible/docker/static/"
     owner: "{{ paleo_user }}"
     group: "{{ paleo_user }}"
     mode: preserve
+  loop:
+    - docker-compose.yml
+    - images
+    - backup.sh
+    - restore.sh
 
-# Static mode is prepared for production use, no certs for now
-- name: Validate paleo_cert_mode
-  ansible.builtin.fail:
-    msg: "paleo_cert_mode must be 'selfsigned' or 'static'"
-  when: paleo_cert_mode not in ["selfsigned", "static"]
-
-- name: Upload static TLS certificate
-  ansible.builtin.copy:
-    dest: "/home/{{ paleo_user }}/paleo-ansible/docker/static/import-certificates/paleo.pem"
-    content: "{{ paleo_static_cert }}"
-    owner: "{{ paleo_user }}"
-    group: "{{ paleo_user }}"
-    mode: '0644'
-  when: paleo_cert_mode == "static"
-
-- name: Upload static TLS certificate key
-  ansible.builtin.copy:
-    dest: "/home/{{ paleo_user }}/paleo-ansible/docker/static/import-certificates/paleo.key"
-    content: "{{ paleo_static_cert_key }}"
-    owner: "{{ paleo_user }}"
-    group: "{{ paleo_user }}"
-    mode: '0600'
-  when: paleo_cert_mode == "static"
-
-- name: Template Docker Compose .env for static site
+- name: Template Docker Compose .env for the static site
   ansible.builtin.template:
     src: env.j2
     dest: "/home/{{ paleo_user }}/paleo-ansible/docker/static/.env"
@@ -63,17 +43,6 @@
     group: "{{ paleo_user }}"
     mode: '0640'
 
-- name: Open firewall ports for HTTP and HTTPS
-  ansible.posix.firewalld:
-    port: "{{ item }}/tcp"
-    permanent: true
-    state: enabled
-    immediate: true
-  loop:
-    - "80"
-    - "{{ paleo_host_port }}"
-
-# MVP shortcut: VM builds its own image.
 - name: Build static image on the target
   ansible.builtin.command:
     cmd: docker compose build

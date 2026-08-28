@@ -1,0 +1,18 @@
+---
+# copyright Utrecht University
+
+# Defaults for the paleo_proxy role.
+paleo_user: paleo
+
+# The VM IP the proxy publishes 80/443 on.
+paleo_proxy_ip: 192.168.70.11
+
+# Space-separated "host|backend" pairs the proxy routes. Set this per
+# environment in host_vars — see environments/development/host_vars/paleo-proxy.
+paleo_proxy_sites: ""
+
+# Basename of the shared multi-SAN certificate the proxy serves for all hosts
+paleo_proxy_cert_name: paleo
+paleo_proxy_cert_mode: selfsigned
+paleo_proxy_cert: notset
+paleo_proxy_cert_key: notset

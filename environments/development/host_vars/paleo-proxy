@@ -1,0 +1,8 @@
+---
+# copyright Utrecht University
+
+# Paleo reverse proxy
+paleo_proxy_ip: 192.168.70.11
+
+# Add pairs as sites come online, e.g. "... www.paleo.test|paleo-wp".
+paleo_proxy_sites: "static.paleo.test|paleo-static www.paleo.test|paleo-wp"

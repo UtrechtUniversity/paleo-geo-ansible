@@ -4,14 +4,5 @@
 # Defaults for the paleo_static role.
 paleo_user: paleo
 
-# Site identity
+# Site identity.
 paleo_host_name: static.paleo.test
-paleo_host_ip: 192.168.70.11
-paleo_host_port: 443
-
-# TLS mode:
-#   selfsigned — container generates a 4096-bit cert at first boot.
-#   static     — operator provides paleo_static_cert + paleo_static_cert_key
-paleo_cert_mode: selfsigned
-paleo_static_cert: notset
-paleo_static_cert_key: notset

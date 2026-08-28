@@ -5,10 +5,12 @@ on:
     paths:
     - 'docker/static/images/static/Dockerfile'
     - 'docker/wordpress/images/wordpress/Dockerfile'
+    - 'docker/proxy/images/nginx/Dockerfile'
   push:
     paths:
     - 'docker/static/images/static/Dockerfile'
     - 'docker/wordpress/images/wordpress/Dockerfile'
+    - 'docker/proxy/images/nginx/Dockerfile'
 
 jobs:
   build:

@@ -4,9 +4,8 @@
 ########################
 # Paleo WordPress site
 ########################
+# Must match the hostname the proxy routes to this backend.
 paleo_host_name: www.paleo.test
-paleo_host_ip: 192.168.70.10
-paleo_host_port: 443
 
 paleo_first_site_title: "Paleo Earth Demo - WordPress site"
 paleo_first_user_name: admin
@@ -18,8 +17,3 @@ paleo_first_user_password: paleopassword
 ########################
 paleo_mariadb_password: devpassword
 paleo_mariadb_root_password: devrootpassword
-
-########################
-# TLS
-########################
-paleo_cert_mode: selfsigned

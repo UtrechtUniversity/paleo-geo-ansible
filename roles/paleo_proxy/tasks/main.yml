@@ -1,0 +1,119 @@
+---
+# copyright Utrecht University
+
+# paleo_proxy role — deploys the nginx reverse proxy.
+
+- name: Ensure paleo group exists
+  ansible.builtin.group:
+    name: "{{ paleo_user }}"
+
+- name: Ensure paleo user exists and is in the docker group
+  ansible.builtin.user:
+    name: "{{ paleo_user }}"
+    group: "{{ paleo_user }}"
+    groups: docker
+    create_home: true
+
+- name: Ensure paleo-ansible/docker/proxy directory exists on the target
+  ansible.builtin.file:
+    path: "/home/{{ paleo_user }}/paleo-ansible/docker/proxy"
+    state: directory
+    owner: "{{ paleo_user }}"
+    group: "{{ paleo_user }}"
+    mode: '0755'
+
+# MVP: copy the docker/proxy/ tree from the Ansible controller.
+- name: Copy docker/proxy assets to the target
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/docker/proxy/{{ item }}"
+    dest: "/home/{{ paleo_user }}/paleo-ansible/docker/proxy/"
+    owner: "{{ paleo_user }}"
+    group: "{{ paleo_user }}"
+    mode: preserve
+  loop:
+    - docker-compose.yml
+    - images
+    - import-certificates
+  notify: Restart paleo-proxy
+
+- name: Validate paleo_proxy_cert_mode
+  ansible.builtin.fail:
+    msg: >-
+      paleo_proxy_cert_mode must be 'selfsigned' or 'static'
+      (currently: {{ paleo_proxy_cert_mode }})
+  when: paleo_proxy_cert_mode not in ["selfsigned", "static"]
+
+- name: Fail early if static mode is selected without a certificate
+  ansible.builtin.fail:
+    msg: >-
+      paleo_proxy_cert_mode is 'static' but paleo_proxy_cert and/or
+      paleo_proxy_cert_key are unset. Set both in this environment's
+      (vaulted) host_vars.
+  when:
+    - paleo_proxy_cert_mode == "static"
+    - paleo_proxy_cert == "notset" or paleo_proxy_cert_key == "notset"
+
+- name: Upload the shared multi-SAN certificate
+  ansible.builtin.copy:
+    dest: "/home/{{ paleo_user }}/paleo-ansible/docker/proxy/import-certificates/{{ paleo_proxy_cert_name }}.pem"
+    content: "{{ paleo_proxy_cert }}"
+    owner: "{{ paleo_user }}"
+    group: "{{ paleo_user }}"
+    # Public half of the pair — readable is correct.
+    mode: '0644'
+  when: paleo_proxy_cert_mode == "static"
+  notify: Restart paleo-proxy
+
+- name: Upload the shared certificate private key
+  ansible.builtin.copy:
+    dest: "/home/{{ paleo_user }}/paleo-ansible/docker/proxy/import-certificates/{{ paleo_proxy_cert_name }}.key"
+    content: "{{ paleo_proxy_cert_key }}"
+    owner: "{{ paleo_user }}"
+    group: "{{ paleo_user }}"
+    mode: '0600'
+  no_log: true
+  when: paleo_proxy_cert_mode == "static"
+  notify: Restart paleo-proxy
+
+- name: Template Docker Compose .env for the proxy
+  ansible.builtin.template:
+    src: env.j2
+    dest: "/home/{{ paleo_user }}/paleo-ansible/docker/proxy/.env"
+    owner: "{{ paleo_user }}"
+    group: "{{ paleo_user }}"
+    mode: '0640'
+  # PALEO_SITES / PALEO_CERT live here — a change must reach the container.
+  notify: Restart paleo-proxy
+
+- name: Open firewall ports for HTTP and HTTPS
+  ansible.posix.firewalld:
+    port: "{{ item }}/tcp"
+    permanent: true
+    state: enabled
+    immediate: true
+  loop:
+    - "80"
+    - "443"
+
+# MVP: VM builds its own image.
+- name: Build proxy image on the target
+  ansible.builtin.command:
+    cmd: docker compose build
+    chdir: "/home/{{ paleo_user }}/paleo-ansible/docker/proxy"
+  changed_when: true
+
+- name: Install paleo-proxy.service systemd unit
+  ansible.builtin.template:
+    src: paleo-proxy.service.j2
+    dest: /etc/systemd/system/paleo-proxy.service
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart paleo-proxy
+
+- name: Enable and start paleo-proxy.service
+  ansible.builtin.service:
+    name: paleo-proxy
+    enabled: true
+    state: started
+    daemon_reload: true

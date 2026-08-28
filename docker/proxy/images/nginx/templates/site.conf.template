@@ -1,0 +1,42 @@
+# copyright Utrecht University
+# Generate server block for each site from nginx-entrypoint.sh.
+# Terminates TLS for one hostname and routes to its container.
+server {
+    # IPv4
+    listen 443 ssl;
+    # IPv6
+    listen [::]:443 ssl;
+    # Only applicable to nginx >= 1.25
+    http2 on;
+
+    server_name __HOST__;
+
+    # Although the cert is the same for each host, __CERT__ is used as an variable for customized certs.
+    # __CERT__ = paleo (shared cert)
+    ssl_certificate     /etc/nginx/certs/__CERT__.pem;
+    ssl_certificate_key /etc/nginx/certs/__CERT__.key;
+
+    ssl_protocols             TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers off;
+    ssl_ciphers               ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384;
+
+    # HSTS (2 years)
+    add_header Strict-Transport-Security "max-age=63072000" always;
+
+    # 100M for WP sites
+    client_max_body_size 100M;
+
+    location / {
+        # Resolve the backend by name at request time.
+        resolver 127.0.0.11 valid=30s ipv6=off;
+        set $paleo_backend __BACKEND__;
+        proxy_pass http://$paleo_backend:__PORT__;
+
+        # Pass the original HTTPS arguments to the backend.
+        proxy_set_header Host              $host;
+        proxy_set_header X-Forwarded-Host  $host;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-For   $remote_addr;
+        proxy_set_header X-Real-IP         $remote_addr;
+    }
+}
