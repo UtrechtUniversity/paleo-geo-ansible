@@ -37,7 +37,7 @@ services:
       - paleo_net
 
 networks:
-  # Private netwrok.
+  # Private network.
   paleo_net:
     # Attach to the pre-existing shared paleo_net
     external: true
