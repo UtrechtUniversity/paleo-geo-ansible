@@ -11,7 +11,7 @@ server {
 
     server_name __HOST__;
 
-    # Even tho the cert is the same for each host, __CERT__ is used as an variable for customized certs.
+    # Although the cert is the same for each host, __CERT__ is used as an variable for customized certs.
     # __CERT__ = paleo (shared cert)
     ssl_certificate     /etc/nginx/certs/__CERT__.pem;
     ssl_certificate_key /etc/nginx/certs/__CERT__.key;
